@@ -1,0 +1,23 @@
+services:
+  cockpit-django:
+    build: .
+    container_name: ai-cockpit-web
+    restart: always
+    volumes:
+      - .:/app
+    environment:
+      - DB_NAME=ai_interactions
+      - DB_USER=alef_admin
+      - DB_PASS=Aledu@0912 # <--- Use a mesma do Postgres
+      - DB_HOST=postgres-ai
+      - DB_PORT=5432
+    networks:
+      - proxy-nw
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+networks:
+  proxy-nw:
+    external: true

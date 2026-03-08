@@ -1,0 +1,36 @@
+services:
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: postgres-ai
+    restart: always
+    environment:
+      POSTGRES_USER: alef_admin
+      POSTGRES_PASSWORD: SuaSenhaForteAqui # <--- Altere aqui
+      POSTGRES_DB: ai_interactions
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - proxy-nw
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  vector-db:
+    image: qdrant/qdrant:latest
+    container_name: qdrant-knowledge
+    restart: always
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+    volumes:
+      - ./qdrant_data:/qdrant/storage
+    networks:
+      - proxy-nw
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+networks:
+  proxy-nw:
+    external: true

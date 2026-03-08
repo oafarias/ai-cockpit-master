@@ -1,0 +1,21 @@
+services:
+  ai-engine:
+    build: .
+    container_name: ai-engine-fastapi
+    restart: always
+    env_file:
+      - ../.env  # <-- Puxa tudo que o Python precisa (Azure, DB, Qdrant)
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    networks:
+      - proxy-nw
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+networks:
+  proxy-nw:
+    external: true

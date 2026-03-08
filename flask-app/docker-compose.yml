@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  flask-app:
+    build: .
+    container_name: flask-web-app
+    restart: always
+    networks:
+      - proxy-nw
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+networks:
+  proxy-nw:
+    external: true

@@ -1,0 +1,20 @@
+# Segredos e Configurações
+.env
+env.example
+
+# Infra e Dados (NUNCA subir isso)
+ai-data-stack/postgres_data/
+ai-data-stack/qdrant_data/
+nginx-proxy-manager/data/
+nginx-proxy-manager/letsencrypt/
+
+# Python
+__pycache__/
+*.py[cod]
+*.class
+venv/
+.venv/
+
+# Logs e Docker
+*.log
+docker-compose.override.yml
