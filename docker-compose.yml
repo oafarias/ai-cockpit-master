@@ -1,0 +1,43 @@
+services:
+  # Banco de Dados
+  postgres-ai:
+    extends:
+      file: ai-data-stack/docker-compose.yml
+      service: postgres-db
+    networks:
+      - proxy-nw
+
+  # Busca Vetorial (O que estava faltando!)
+  qdrant-knowledge:
+    extends:
+      file: ai-data-stack/docker-compose.yml
+      service: vector-db # Verifique se este é o nome no arquivo original
+    networks:
+      - proxy-nw
+
+  # Motor de IA (FastAPI)
+  ai-engine:
+    extends:
+      file: ai-engine-fastapi/docker-compose.yml
+      service: ai-engine
+    depends_on:
+      - postgres-ai
+      - qdrant-knowledge
+    networks:
+      - proxy-nw
+
+  # Cockpit (Django)
+  cockpit:
+    extends:
+      file: ai-cockpit-django/docker-compose.yml
+      service: cockpit-django
+    ports:
+      - "8001:8000"
+    depends_on:
+      - postgres-ai
+    networks:
+      - proxy-nw
+
+networks:
+  proxy-nw:
+    external: true

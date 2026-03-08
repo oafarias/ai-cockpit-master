@@ -5,7 +5,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: alef_admin
-      POSTGRES_PASSWORD: SuaSenhaForteAqui # <--- Altere aqui
+      POSTGRES_PASSWORD: Aledu@0912 # <--- Altere aqui
       POSTGRES_DB: ai_interactions
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
