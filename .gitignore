@@ -18,3 +18,4 @@ venv/
 # Logs e Docker
 *.log
 docker-compose.override.yml
+ai-cockpit-django/staticfiles/
