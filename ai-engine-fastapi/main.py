@@ -8,6 +8,7 @@ from langchain_qdrant import QdrantVectorStore
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.chains import LLMChain
+import httpx
 
 app = FastAPI(title="AI Engine - Cockpit")
 
@@ -58,41 +59,13 @@ def save_log_to_db(session_id, message, response, ip, latency):
     except Exception as e: print(f"Erro log: {e}")
 
 @app.post("/v1/chat")
-async def chat_endpoint(message: ChatMessage, request: Request, background_tasks: BackgroundTasks):
-    start_time = time.time()
+async def chat_endpoint(message: ChatMessage):
+    n8n_url = "http://n8n-automation:5678/webhook/chat-aiwa" # Use o nome do serviço no Docker
     
-    # A. Recuperar Memória (k=5)
-    if message.session_id not in memories:
-        memories[message.session_id] = ConversationBufferWindowMemory(k=5, return_messages=True, memory_key="chat_history")
-    memory = memories[message.session_id]
-
-    # B. BUSCA SEMÂNTICA (RAG)
-    # Busca os 2 trechos mais relevantes no Qdrant
-    docs = vector_store.similarity_search(message.text, k=2)
-    contexto = "\n".join([d.page_content for d in docs])
-
-    # C. Prompt Estruturado
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", f"Você é o assistente técnico da Aiwa. Use o contexto abaixo para responder:\n\n{contexto}"),
-        MessagesPlaceholder(variable_name="chat_history"),
-        ("human", "{input}")
-    ])
-
-    # D. Execução
-    llm = AzureChatOpenAI(
-        azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
-        openai_api_version=os.getenv("OPENAI_API_VERSION"),
-        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-        temperature=0
-    )
-    
-    chain = LLMChain(llm=llm, prompt=prompt, memory=memory)
-    ai_response = chain.run(input=message.text)
-    
-    latency = f"{round(time.time() - start_time, 4)}s"
-
-    # E. Log Assíncrono
-    background_tasks.add_task(save_log_to_db, message.session_id, message.text, ai_response, request.client.host, latency)
-
-    return {"answer": ai_response, "session_id": message.session_id}
+    async with httpx.AsyncClient() as client:
+        response = await client.post(n8n_url, json={
+            "text": message.text,
+            "session_id": message.session_id
+        }, timeout=60.0) # Aumente o timeout porque IA demora
+        
+    return response.json()
